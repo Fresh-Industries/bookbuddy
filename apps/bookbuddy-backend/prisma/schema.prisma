@@ -17,6 +17,10 @@ model User {
   userBooks       UserBook[]
   readingSessions ReadingSession[]
   notes           Note[]
+  highlights     Highlight[]
+  readingGoals   ReadingGoal[]
+  userStats      UserStats?
+  preferences    UserPreference?
 }
 
 model UserBook {
@@ -37,6 +41,7 @@ model UserBook {
   user          User            @relation(fields: [userId], references: [id])
   readingSessions ReadingSession[]
   notes         Note[]
+  highlights    Highlight[]
 
   @@unique([userId, googleBooksId])
 }
@@ -45,9 +50,10 @@ model ReadingSession {
   id          Int       @id @default(autoincrement())
   userId      Int
   userBookId  Int
-  startedAt   DateTime
+  startedAt   DateTime  @default(now())
+  endedAt     DateTime?
   pageStart   Int       @default(0)
-  pageEnd   Int       @default(0)
+  pageEnd     Int       @default(0)
   timeSpent   Int?      // Time spent in this session, in minutes
 
   user        User      @relation(fields: [userId], references: [id])
@@ -61,18 +67,83 @@ model ReadingSession {
 model Note {
   id               Int            @id @default(autoincrement())
   content          String
+  pageNumber       Int?
   createdAt        DateTime       @default(now())
+  updatedAt        DateTime?      @updatedAt
   userId           Int
   userBookId       Int
-  readingSessionId Int
+  readingSessionId Int?
 
   user             User           @relation(fields: [userId], references: [id])
   userBook         UserBook       @relation(fields: [userBookId], references: [id])
-  readingSession   ReadingSession @relation(fields: [readingSessionId], references: [id])
+  readingSession   ReadingSession? @relation(fields: [readingSessionId], references: [id])
 
   @@index([userId])
   @@index([userBookId])
   @@index([readingSessionId])
 }
 
+model Highlight {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  userBookId    Int
+  content       String    // The highlighted text
+  pageNumber    Int?
+  chapter      String?
+  color        String    @default("yellow") // yellow, green, blue, pink
+  note         String?   // Optional note attached to highlight
+  createdAt    DateTime  @default(now())
 
+  user          User      @relation(fields: [userId], references: [id])
+  userBook      UserBook  @relation(fields: [userBookId], references: [id])
+
+  @@index([userId])
+  @@index([userBookId])
+}
+
+model ReadingGoal {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  year        Int       // Year goal is for
+  month       Int?      // Optional monthly goal
+  type        String    // "pages", "books", "minutes"
+  target      Int       // Target number
+  progress    Int       @default(0) // Current progress
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, year, month, type])
+  @@index([userId])
+}
+
+model UserStats {
+  id              Int       @id @default(autoincrement())
+  userId          Int       @unique
+  totalPagesRead   Int       @default(0)
+  totalBooksRead  Int       @default(0)
+  totalMinutesRead Int       @default(0)
+  currentStreak   Int       @default(0) // Current reading streak in days
+  longestStreak  Int       @default(0) // Longest reading streak
+  lastReadDate    DateTime? // Last day user read
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model UserPreference {
+  id              Int       @id @default(autoincrement())
+  userId          Int       @unique
+  favoriteGenres String[]  @default([]) // e.g., ["fiction", "sci-fi"]
+  favoriteAuthors String[]  @default([])
+  dislikeGenres  String[]  @default([])
+  readingSpeed    Int       @default(30) // pages per hour estimate
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id])
+}

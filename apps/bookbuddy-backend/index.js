@@ -20,12 +20,20 @@ const booksRoutes = require('./routes/books/books');
 const usersRoutes = require('./routes/users/user');
 const readingSessionsRoutes = require('./routes/readingSession/readingSession');
 const aiRoutes = require('./src/routes/ai');
+const statsRoutes = require('./routes/stats/stats');
+const highlightsRoutes = require('./routes/highlights/highlights');
+const goalsRoutes = require('./routes/goals/goals');
+const preferencesRoutes = require('./routes/preferences/preferences');
 
 app.use('/v1/auth', authRoutes);
 app.use('/v1/books', booksRoutes);
 app.use('/v1/users', usersRoutes);
 app.use('/v1/reading-sessions', readingSessionsRoutes);
 app.use('/v1/ai', aiRoutes);
+app.use('/v1/stats', statsRoutes);
+app.use('/v1/highlights', highlightsRoutes);
+app.use('/v1/goals', goalsRoutes);
+app.use('/v1/preferences', preferencesRoutes);
 
 // Health check
 app.get('/health', async (req, res) => {
