@@ -15,11 +15,11 @@ app.use(cors({
 app.use(express.json());
 
 // Routes
-const authRoutes = require('./src/routes/auth');
+const authRoutes = require('./routes/auth/auth');
 const booksRoutes = require('./routes/books/books');
 const usersRoutes = require('./routes/users/user');
 const readingSessionsRoutes = require('./routes/readingSession/readingSession');
-const aiRoutes = require('./src/routes/ai');
+const aiRoutes = require('./routes/ai/ai');
 const statsRoutes = require('./routes/stats/stats');
 const highlightsRoutes = require('./routes/highlights/highlights');
 const goalsRoutes = require('./routes/goals/goals');
@@ -40,7 +40,7 @@ app.get('/health', async (req, res) => {
   try {
     await prisma.$connect();
     res.json({ status: "ok", database: "connected" });
-  } catch (err: any) {
+  } catch (err) {
     res.status(500).json({ status: "error", error: err.message });
   }
 });
