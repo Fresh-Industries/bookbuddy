@@ -1,6 +1,6 @@
 const searchBooks = async (query) => {
     try {
-        const response = await fetch(`h${process.env.BASE_URL}/v1/books/search-books?query=${query}`, {
+        const response = await fetch(`${process.env.BASE_URL}/v1/books/search-books?query=${query}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
