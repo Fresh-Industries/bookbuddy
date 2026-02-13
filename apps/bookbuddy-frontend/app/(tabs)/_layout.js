@@ -3,7 +3,6 @@ import { Tabs } from 'expo-router';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 
-
 export default function AppLayout() {
     return (
             <Tabs screenOptions={{ headerShown: false }}> 
@@ -24,6 +23,33 @@ export default function AppLayout() {
                             <MaterialIcons name="home" color={color} size={size} />
                         ),
                     }} 
+                />
+                <Tabs.Screen 
+                    name="stats"
+                    options={{
+                        title: 'Stats', 
+                        tabBarIcon: ({ color, size }) => (
+                            <MaterialIcons name="bar-chart" color={color} size={size} />
+                        ),
+                    }}
+                />
+                <Tabs.Screen 
+                    name="goals"
+                    options={{
+                        title: 'Goals', 
+                        tabBarIcon: ({ color, size }) => (
+                            <MaterialIcons name="flag" color={color} size={size} />
+                        ),
+                    }}
+                />
+                <Tabs.Screen 
+                    name="highlights"
+                    options={{
+                        title: 'Notes', 
+                        tabBarIcon: ({ color, size }) => (
+                            <MaterialIcons name="highlight" color={color} size={size} />
+                        ),
+                    }}
                 />
                 <Tabs.Screen 
                     name="(profile)" 
