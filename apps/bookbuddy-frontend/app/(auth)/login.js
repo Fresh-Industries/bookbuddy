@@ -17,8 +17,6 @@ const LoginScreen = () => {
       const response = await login(data);
       if(response && response.token){
         loginContext(response.token);
-        setLoading(false);
-        loginContext(response.token);
         router.replace('home');
       }
     } catch (error) {
