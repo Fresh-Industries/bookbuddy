@@ -1,98 +1,75 @@
-import { Router } from "express";
-import { generateBookSummary, generateReadingInsights, generateBookRecommendations, chatWithAI } from "../lib/ai";
-import { PROMPTS, CHAT_SYSTEM } from "../lib/prompts";
-import { z } from "zod";
+import express, { type Request, type Response } from 'express';
+import { generateText } from 'ai';
+import { createOpenAI } from '@ai-sdk/openai';
+import { PrismaClient } from '@prisma/client';
+import jwt from 'jsonwebtoken';
 
-const router = Router();
+const router = express.Router();
+const prisma = new PrismaClient();
 
-// Schema for AI requests
-const chatSchema = z.object({
-  messages: z.array(z.object({
-    role: z.string(),
-    content: z.string(),
-  })),
-  model: z.string().optional(),
-  temperature: z.number().optional(),
-  maxTokens: z.number().optional(),
-});
+const JWT_SECRET = process.env.BETTER_AUTH_SECRET || 'dev-secret';
+const createMiniMax = () => {
+  const key = process.env.MINIMAX_API_KEY;
+  if (!key) throw new Error('MINIMAX_API_KEY missing');
+  return createOpenAI({ baseURL: 'https://api.minimax.chat/v1', apiKey: key });
+};
 
-const summarySchema = z.object({
-  title: z.string(),
-  description: z.string().optional(),
-});
+const mm = createMiniMax();
 
-const insightsSchema = z.object({
-  title: z.string(),
-  notes: z.array(z.string()),
-});
+interface AuthReq extends Request {
+  UserId?: number;
+}
 
-const recommendationsSchema = z.object({
-  books: z.array(z.object({
-    title: z.string(),
-    author: z.string(),
-  })),
-});
+async function getLastSession(userId: number) {
+  return prisma.readingSession.findFirst({ where: { userId }, orderBy: { startedAt: 'desc' });
+}
+async function getBook(id: number) {
+  return prisma.userBook.findUnique({ where: { id });
+}
 
-// Chat endpoint - uses CHAT_SYSTEM prompt
-router.post("/chat", async (req, res) => {
+function verifyToken(req: AuthReq, res: Response, next: Function) {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'No token' });
   try {
-    const { messages, model, temperature, maxTokens } = chatSchema.parse(req.body);
-    
-    // Build messages with system prompt
-    const fullMessages = [
-      { role: "system", content: CHAT_SYSTEM },
-      ...messages,
-    ];
-    
-    const response = await chatWithAI(fullMessages, { model, temperature, maxTokens });
-    
-    res.json({ response });
-  } catch (error: any) {
-    console.error("AI Chat error:", error);
-    res.status(500).json({ error: error.message || "Failed to generate response" });
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
+    req.UserId = decoded.userId;
+    next();
+  } catch { res.status(401).json({ error: 'Invalid token' });
+}
+
+router.post('/chatbot', async (req: Request, res: Response) => {
+  try {
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ error: 'Message required' });
+    const result = await generateText({
+      model: mm('MiniMax-M2.1'),
+      system: 'You are BookBuddy, a friendly book discussion companion.',
+      messages: [{ role: 'user', content: message }]
+    });
+    res.json({ response: result.text });
+  } catch (error) {
+    console.error('Chat error:', error);
+    res.status(500).json({ error: 'Chat failed' });
   }
 });
 
-// Book summary - uses BOOK_SUMMARY_SYSTEM prompt
-router.post("/summary", async (req, res) => {
+router.post('/readingSessionChatbot', verifyToken, async (req: AuthReq, res: Response) => {
   try {
-    const { title, description } = summarySchema.parse(req.body);
-    
-    const prompt = PROMPTS.summarize(title, description);
-    const summary = await generateBookSummary(title, description);
-    
-    res.json({ summary });
-  } catch (error: any) {
-    console.error("Summary error:", error);
-    res.status(500).json({ error: error.message || "Failed to generate summary" });
-  }
-});
-
-// Reading insights - uses READING_INSIGHTS_SYSTEM prompt
-router.post("/insights", async (req, res) => {
-  try {
-    const { title, notes } = insightsSchema.parse(req.body);
-    
-    const insights = await generateReadingInsights(title, notes);
-    
-    res.json({ insights });
-  } catch (error: any) {
-    console.error("Insights error:", error);
-    res.status(500).json({ error: error.message || "Failed to generate insights" });
-  }
-});
-
-// Book recommendations - uses BOOK_RECOMMENDATIONS_SYSTEM prompt
-router.post("/recommendations", async (req, res) => {
-  try {
-    const { books } = recommendationsSchema.parse(req.body);
-    
-    const recommendations = await generateBookRecommendations(books);
-    
-    res.json({ recommendations });
-  } catch (error: any) {
-    console.error("Recommendations error:", error);
-    res.status(500).json({ error: error.message || "Failed to generate recommendations" });
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ error: 'Message required' });
+    const session = await getLastSession(req.UserId!);
+    if (!session) return res.status(404).json({ error: 'No session' });
+    const book = await getBook(session.userBookId);
+    if (!book) return res.status(404).json({ error: 'Book not found' });
+    const result = await generateText({
+      model: mm('MiniMax-M2.1'),
+      system: `Discussing "${book.title}" by ${book.authors?.join(', ')}. Pages ${session.pageStart}-${session.pageEnd}.`,
+      messages: [{ role: 'user', content: message }]
+    });
+    res.json({ response: result.text });
+  } catch (error) {
+    console.error('Session chat error:', error);
+    res.status(500).json({ error: 'Chat failed' });
   }
 });
 
