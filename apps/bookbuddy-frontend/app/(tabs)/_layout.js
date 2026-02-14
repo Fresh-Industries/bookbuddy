@@ -1,63 +1,77 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { Text, View, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { palette, radius, shadow, spacing, type } from '../../theme/tokens';
 
 
 export default function AppLayout() {
+    const insets = useSafeAreaInsets();
+
+    const icon = (symbol, focused) => (
+        <View style={[styles.iconWrap, focused && styles.iconWrapFocused]}>
+            <Text style={[styles.iconText, focused && styles.iconTextFocused]}>{symbol}</Text>
+        </View>
+    );
+
     return (
-            <Tabs screenOptions={{ headerShown: false }}> 
+            <Tabs
+                screenOptions={{
+                    headerShown: false,
+                    sceneStyle: { backgroundColor: palette.background },
+                    tabBarStyle: [
+                        styles.tabBar,
+                        {
+                            height: 62 + Math.max(insets.bottom, spacing.xs),
+                            paddingBottom: Math.max(insets.bottom, spacing.xs),
+                        },
+                    ],
+                    tabBarLabelStyle: styles.label,
+                    tabBarActiveTintColor: palette.text,
+                    tabBarInactiveTintColor: palette.textMuted,
+                    tabBarHideOnKeyboard: true,
+                }}
+            > 
                 <Tabs.Screen 
                     name="(search)"
                     options={{
                         title: 'Search', 
-                        tabBarIcon: ({ color, size }) => (
-                            <MaterialIcons name="search" color={color} size={size} />
-                        ),
+                        tabBarIcon: ({ focused }) => icon('⌕', focused),
                     }} 
                 />
                 <Tabs.Screen 
                     name="(home)" 
                     options={{
                         title: 'Home', 
-                        tabBarIcon: ({ color, size }) => (
-                            <MaterialIcons name="home" color={color} size={size} />
-                        ),
+                        tabBarIcon: ({ focused }) => icon('⌂', focused),
                     }} 
                 />
                 <Tabs.Screen 
-                    name="stats"
+                    name="stats/index"
                     options={{
                         title: 'Stats', 
-                        tabBarIcon: ({ color, size }) => (
-                            <MaterialIcons name="bar-chart" color={color} size={size} />
-                        ),
+                        tabBarIcon: ({ focused }) => icon('◔', focused),
                     }}
                 />
                 <Tabs.Screen 
-                    name="goals"
+                    name="goals/index"
                     options={{
                         title: 'Goals', 
-                        tabBarIcon: ({ color, size }) => (
-                            <MaterialIcons name="flag" color={color} size={size} />
-                        ),
+                        tabBarIcon: ({ focused }) => icon('◎', focused),
                     }}
                 />
                 <Tabs.Screen 
-                    name="highlights"
+                    name="highlights/index"
                     options={{
                         title: 'Notes', 
-                        tabBarIcon: ({ color, size }) => (
-                            <MaterialIcons name="highlight" color={color} size={size} />
-                        ),
+                        tabBarIcon: ({ focused }) => icon('✦', focused),
                     }}
                 />
                 <Tabs.Screen 
                     name="(profile)" 
                     options={{
                         title: 'Profile', 
-                        tabBarIcon: ({ color, size }) => (
-                            <MaterialIcons name="person" color={color} size={size} />
-                        ),
+                        tabBarIcon: ({ focused }) => icon('◯', focused),
                     }} 
                 />
                 <Tabs.Screen 
@@ -71,3 +85,40 @@ export default function AppLayout() {
             </Tabs>
     );
 }
+
+const styles = StyleSheet.create({
+    tabBar: {
+        position: 'absolute',
+        bottom: spacing.md,
+        marginHorizontal: spacing.md,
+        height: 72,
+        borderRadius: 24,
+        borderTopWidth: 0,
+        backgroundColor: palette.surface,
+        paddingBottom: spacing.xs,
+        paddingTop: spacing.xs,
+        ...shadow,
+    },
+    label: {
+        fontSize: 12,
+        fontFamily: type.emphasis,
+    },
+    iconWrap: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    iconWrapFocused: {
+        backgroundColor: palette.primarySoft,
+    },
+    iconText: {
+        fontSize: 13,
+        color: palette.textMuted,
+        fontFamily: type.emphasis,
+    },
+    iconTextFocused: {
+        color: palette.primary,
+    },
+});

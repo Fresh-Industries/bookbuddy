@@ -1,8 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Modal, ScrollView } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { getHighlights, createHighlight, deleteHighlight } from '../../apis/highlights/highlights';
-import { useAuth } from '../../context/AuthContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { getHighlights, createHighlight, deleteHighlight } from '../../../apis/highlights/highlights';
+import { useAuth } from '../../../context/AuthContext';
+import { palette, radius, shadow, spacing, type } from '../../../theme/tokens';
 
 const COLORS = ['#FFE066', '#A8E6CF', '#88D8FF', '#FF8B94'];
 
@@ -77,7 +79,7 @@ const HighlightsScreen = () => {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.title}>✏️ Highlights</Text>
       </View>
@@ -158,35 +160,38 @@ const HighlightsScreen = () => {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: palette.background,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    padding: spacing.md,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 30,
+    fontFamily: type.display,
+    color: palette.text,
   },
   list: {
-    padding: 16,
+    padding: spacing.md,
   },
   highlightCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: palette.surface,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: palette.border,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
     borderLeftWidth: 4,
+    ...shadow,
   },
   highlightHeader: {
     flexDirection: 'row',
@@ -196,25 +201,28 @@ const styles = StyleSheet.create({
   },
   bookTitle: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
+    fontFamily: type.emphasis,
+    color: palette.textMuted,
     flex: 1,
   },
   pageNumber: {
     fontSize: 12,
-    color: '#999',
+    color: palette.textMuted,
+    fontFamily: type.body,
   },
   highlightContent: {
     fontSize: 16,
-    color: '#333',
+    color: palette.text,
     fontStyle: 'italic',
     lineHeight: 24,
+    fontFamily: type.body,
   },
   highlightNote: {
     fontSize: 14,
-    color: '#666',
+    color: palette.textMuted,
     marginTop: 8,
     fontStyle: 'italic',
+    fontFamily: type.body,
   },
   highlightFooter: {
     flexDirection: 'row',
@@ -224,11 +232,13 @@ const styles = StyleSheet.create({
   },
   highlightDate: {
     fontSize: 12,
-    color: '#999',
+    color: palette.textMuted,
+    fontFamily: type.body,
   },
   deleteText: {
     fontSize: 12,
-    color: '#FF6B6B',
+    color: palette.danger,
+    fontFamily: type.emphasis,
   },
   emptyState: {
     flex: 1,
@@ -242,13 +252,14 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
+    fontFamily: type.title,
+    color: palette.text,
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#666',
+    color: palette.textMuted,
+    fontFamily: type.body,
     textAlign: 'center',
   },
   modalOverlay: {
@@ -257,22 +268,23 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#FFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
+    backgroundColor: palette.surface,
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
+    padding: spacing.xl,
     maxHeight: '80%',
   },
   modalTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: type.display,
+    color: palette.text,
     marginBottom: 20,
     textAlign: 'center',
   },
   inputLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
+    fontFamily: type.emphasis,
+    color: palette.textMuted,
     marginBottom: 8,
     marginTop: 12,
   },
@@ -283,24 +295,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 16,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: palette.surfaceMuted,
     marginRight: 8,
   },
   bookChipActive: {
-    backgroundColor: '#DA0D57',
+    backgroundColor: palette.primary,
   },
   bookChipText: {
     fontSize: 12,
-    color: '#666',
+    color: palette.textMuted,
+    fontFamily: type.body,
   },
   bookChipTextActive: {
     color: '#FFF',
   },
   input: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: palette.surfaceMuted,
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
+    color: palette.text,
+    borderWidth: 1,
+    borderColor: palette.border,
+    fontFamily: type.body,
   },
   textArea: {
     minHeight: 100,
@@ -317,7 +334,7 @@ const styles = StyleSheet.create({
   },
   colorBtnActive: {
     borderWidth: 3,
-    borderColor: '#333',
+    borderColor: palette.text,
   },
   modalButtons: {
     flexDirection: 'row',
@@ -328,24 +345,24 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 16,
     borderRadius: 12,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: palette.surfaceMuted,
     alignItems: 'center',
   },
   cancelBtnText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#666',
+    fontFamily: type.emphasis,
+    color: palette.textMuted,
   },
   saveBtn: {
     flex: 1,
     paddingVertical: 16,
     borderRadius: 12,
-    backgroundColor: '#DA0D57',
+    backgroundColor: palette.primary,
     alignItems: 'center',
   },
   saveBtnText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: type.emphasis,
     color: '#FFF',
   },
 });

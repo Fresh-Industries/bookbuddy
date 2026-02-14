@@ -1,8 +1,10 @@
+const { getApiBaseUrl } = require('../../utils/apiBaseUrl');
+
 // Preferences & Recommendations API calls
 
 const getPreferences = async (userToken) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/preferences/preferences`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/preferences/preferences`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -21,7 +23,7 @@ const getPreferences = async (userToken) => {
 
 const updatePreferences = async (userToken, { favoriteGenres, favoriteAuthors, dislikeGenres, readingSpeed }) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/preferences/preferences`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/preferences/preferences`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -41,7 +43,7 @@ const updatePreferences = async (userToken, { favoriteGenres, favoriteAuthors, d
 
 const getRecommendations = async (userToken) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/preferences/recommendations`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/preferences/recommendations`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -60,7 +62,7 @@ const getRecommendations = async (userToken) => {
 
 const updateReadingSpeed = async (userToken, { pagesRead, minutesSpent }) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/preferences/update-speed`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/preferences/update-speed`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

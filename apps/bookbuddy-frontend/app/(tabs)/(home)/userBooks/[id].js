@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, View, Image, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Rating, Button as ElementsButton } from 'react-native-elements';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../../../context/AuthContext';
 import { getUserBookById } from '../../../../apis/users/users';
 import { updateUserBook } from '../../../../apis/books/books';
@@ -85,25 +85,31 @@ const BookDetail = () => {
     };
 
     if (!book) {
-        return <Text>Loading...</Text>;
+        return (
+          <SafeAreaView style={styles.container} edges={['top']}>
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+              <Text>Loading...</Text>
+            </View>
+          </SafeAreaView>
+        );
     }
 
     return (
-      <ScrollView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView>
           <View style={styles.header}>
               {book.imageUrl && (
                   <Image source={{ uri: book.imageUrl }} style={styles.thumbnail} />
               )}
               <Text style={styles.title}>{book.title}</Text>
               <Text style={styles.author}>{book.authors ? book.authors.join(', ') : 'No Authors'}</Text>
-              <Rating
-                  type="custom"
-                  imageSize={40}
-                  ratingColor = "orange"
-                  onFinishRating={(rating) => setRating(rating)}
-                  style={styles.rating}
-                  startingValue={rating}
-              />
+              <View style={styles.rating}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <TouchableOpacity key={star} onPress={() => setRating(star)}>
+                    <Text style={[styles.star, rating >= star && styles.starActive]}>★</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
           </View>
 
           <View style={styles.statsGrid}>
@@ -137,9 +143,12 @@ const BookDetail = () => {
           
 
           <View style={styles.actionButtons}>
-              <ElementsButton buttonStyle={styles.startReadingButton} title="Start Reading"   onPress={() => onStartReading(book.id)} />
+              <TouchableOpacity style={styles.startReadingButton} onPress={() => onStartReading(book.id)}>
+                <Text style={styles.startReadingButtonText}>Start Reading</Text>
+              </TouchableOpacity>
           </View>
       </ScrollView>
+      </SafeAreaView>
   );
 };
 
@@ -212,8 +221,21 @@ const styles = StyleSheet.create({
       paddingHorizontal: 20,
       borderRadius: 10,
   },
+  startReadingButtonText: {
+      color: '#fff',
+      fontWeight: '700',
+  },
   rating: {
       marginVertical: 20,
+      flexDirection: 'row',
+      gap: 6,
+  },
+  star: {
+      fontSize: 32,
+      color: '#C7CDD4',
+  },
+  starActive: {
+      color: '#F59E0B',
   },
 
   statusSelector: {

@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.BETTER_AUTH_SECRET || 'dev-secret';
+const JWT_SECRET = process.env.JWT_SECRET || process.env.BETTER_AUTH_SECRET || 'dev-secret';
 
 interface AuthReq extends Request { UserId?: number; }
 
@@ -13,8 +13,10 @@ function verify(req: AuthReq, res: Response, next: Function) {
   const token = req.headers.authorization?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'No token' });
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
-    req.UserId = decoded.userId;
+    const decoded = jwt.verify(token, JWT_SECRET) as { UserId?: number; userId?: number };
+    const userId = decoded.UserId ?? decoded.userId;
+    if (!userId) return res.status(401).json({ error: 'Invalid token payload' });
+    req.UserId = userId;
     next();
   } catch {
     res.status(401).json({ error: 'Invalid token' });

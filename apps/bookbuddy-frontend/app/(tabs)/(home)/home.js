@@ -1,13 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { deleteToken } from '../../../utils/secureStore';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import { router } from 'expo-router';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Library from '../../../components/library';
 import { useAuth } from '../../../context/AuthContext';
+import { motion, palette, radius, shadow, spacing, type } from '../../../theme/tokens';
 
 const HomeScreen = () => {
   const { authToken, logout } = useAuth();
+  const intro = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(intro, {
+      toValue: 1,
+      duration: motion.medium,
+      useNativeDriver: true,
+    }).start();
+  }, [intro]);
 
   useEffect(() => {
     if (!authToken) {
@@ -21,66 +30,153 @@ const HomeScreen = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Welcome</Text>
-      </View>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <Animated.View
+          style={[
+            styles.heroCard,
+            {
+              opacity: intro,
+              transform: [
+                {
+                  translateY: intro.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [16, 0],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
+          <Text style={styles.eyebrow}>TODAY</Text>
+          <Text style={styles.title}>Welcome Back</Text>
+          <Text style={styles.subtitle}>Keep momentum by opening your current read or exploring a new one.</Text>
+          <View style={styles.quickRow}>
+            <TouchableOpacity style={styles.quickBtn} onPress={() => router.push('/search')}>
+              <Text style={styles.quickBtnText}>Search Books</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.quickBtn, styles.quickBtnGhost]} onPress={() => router.push('/stats/index')}>
+              <Text style={[styles.quickBtnText, styles.quickBtnGhostText]}>View Stats</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
 
-      <View style={styles.librarySection}>
-        <Library />
-      </View>
-      <TouchableOpacity style={styles.button} onPress={handleLogout}>
-        <Text style={styles.buttonText}>Logout</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        <View style={styles.libraryHeader}>
+          <Text style={styles.sectionTitle}>Your Library</Text>
+          <TouchableOpacity onPress={() => router.push('/search')}>
+            <Text style={styles.linkText}>Add more</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.librarySection}>
+          <Library />
+        </View>
+
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutText}>Sign Out</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    backgroundColor: '#f0f4f8', // Updated to a lighter, more modern background color
+    backgroundColor: palette.background,
   },
-  header: {
-    marginTop: 30,
-    padding: 20,
-    width: '100%',
-    alignItems: 'center', // Center align the header for a more modern look
+  content: {
+    flex: 1,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl,
+    paddingBottom: 120,
+  },
+  heroCard: {
+    backgroundColor: palette.surface,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: palette.border,
+    ...shadow,
+  },
+  eyebrow: {
+    color: palette.primary,
+    fontSize: 12,
+    letterSpacing: 1.4,
+    fontFamily: type.emphasis,
+    marginBottom: spacing.xs,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '600', // Semi-bold for a modern appearance
-    color: '#333',
+    color: palette.text,
+    fontSize: 30,
+    fontFamily: type.display,
+  },
+  subtitle: {
+    marginTop: spacing.xs,
+    color: palette.textMuted,
+    fontSize: 15,
+    lineHeight: 22,
+    fontFamily: type.body,
+  },
+  quickRow: {
+    marginTop: spacing.lg,
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  quickBtn: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    alignItems: 'center',
+    borderRadius: radius.pill,
+    backgroundColor: palette.primary,
+  },
+  quickBtnGhost: {
+    backgroundColor: palette.primarySoft,
+  },
+  quickBtnText: {
+    color: '#FFFFFF',
+    fontFamily: type.emphasis,
+    fontSize: 14,
+  },
+  quickBtnGhostText: {
+    color: palette.primary,
+  },
+  libraryHeader: {
+    marginTop: spacing.xl,
+    marginBottom: spacing.sm,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  sectionTitle: {
+    fontSize: 20,
+    color: palette.text,
+    fontFamily: type.title,
+  },
+  linkText: {
+    color: palette.primary,
+    fontFamily: type.emphasis,
+    fontSize: 14,
   },
   librarySection: {
-    width: '90%', // Adjust to give more breathing room
-    marginVertical: 20,
-    paddingVertical: 10,
-    borderTopColor: '#ddd',
-    borderTopWidth: 1,
-    borderBottomColor: '#ddd',
-    borderBottomWidth: 1,
+    backgroundColor: palette.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: palette.border,
+    ...shadow,
   },
-  button: {
-    backgroundColor: '#007AFF',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 20, // More pronounced rounded corners for the button
-    marginVertical: 20, // Added margin for better spacing from the last section
-    shadowColor: '#007AFF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 5,
+  logoutButton: {
+    marginTop: spacing.xl,
+    alignSelf: 'center',
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.pill,
+    backgroundColor: '#E9EFFA',
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+  logoutText: {
+    color: palette.textMuted,
+    fontFamily: type.emphasis,
+    fontSize: 14,
   },
 });
 
 export default HomeScreen;
-
-

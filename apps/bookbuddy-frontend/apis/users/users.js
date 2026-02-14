@@ -1,6 +1,8 @@
+const { getApiBaseUrl } = require('../../utils/apiBaseUrl');
+
 const getUser = async (userToken) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/users/user`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/users/user`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -22,7 +24,7 @@ const getUser = async (userToken) => {
 
 const getUserBookById = async (userToken, id) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/users/user-book/${id} `, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/users/user-book/${id}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -43,7 +45,7 @@ const getUserBookById = async (userToken, id) => {
 
 const getUserNotes = async (userToken) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/users/user-notes `, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/users/user-notes`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -64,7 +66,7 @@ const getUserNotes = async (userToken) => {
 
 const getUserNotesByBookId = async (userToken, id) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/users/user-note/${id} `, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/users/user-note/${id}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

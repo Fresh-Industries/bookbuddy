@@ -1,8 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal, FlatList, Dimensions } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { getGoals, createGoal, updateGoalProgress, deleteGoal } from '../../apis/goals/goals';
-import { useAuth } from '../../context/AuthContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { getGoals, createGoal, updateGoalProgress, deleteGoal } from '../../../apis/goals/goals';
+import { useAuth } from '../../../context/AuthContext';
+import { palette, radius, shadow, spacing, type } from '../../../theme/tokens';
 
 const { width } = Dimensions.get('window');
 
@@ -79,7 +81,7 @@ const GoalsScreen = () => {
       
       {item.month && (
         <Text style={styles.goalMonth}>
-          {new Date(item.month, 0).toLocaleString('default', { month: 'long' }}
+          {new Date(item.month, 0).toLocaleString('default', { month: 'long' })}
         </Text>
       )}
       
@@ -99,7 +101,7 @@ const GoalsScreen = () => {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.title}>🎯 Reading Goals</Text>
         <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
@@ -163,44 +165,48 @@ const GoalsScreen = () => {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: palette.background,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    padding: spacing.md,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 30,
+    fontFamily: type.display,
+    color: palette.text,
   },
   addBtn: {
-    backgroundColor: '#DA0D57',
+    backgroundColor: palette.primary,
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingVertical: 9,
+    borderRadius: radius.pill,
+    ...shadow,
   },
   addBtnText: {
     color: '#FFF',
-    fontWeight: '600',
+    fontFamily: type.emphasis,
   },
   list: {
-    padding: 16,
+    padding: spacing.md,
   },
   goalCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: palette.surface,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: palette.border,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+    ...shadow,
   },
   goalHeader: {
     flexDirection: 'row',
@@ -209,17 +215,18 @@ const styles = StyleSheet.create({
   },
   goalType: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    fontFamily: type.title,
+    color: palette.text,
   },
   deleteBtn: {
-    color: '#999',
+    color: palette.textMuted,
     fontSize: 18,
     padding: 4,
   },
   goalMonth: {
     fontSize: 14,
-    color: '#666',
+    color: palette.textMuted,
+    fontFamily: type.body,
     marginTop: 4,
   },
   progressContainer: {
@@ -230,26 +237,27 @@ const styles = StyleSheet.create({
   progressBar: {
     flex: 1,
     height: 12,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: '#E9EFF7',
     borderRadius: 6,
     marginRight: 12,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#DA0D57',
+    backgroundColor: palette.primary,
     borderRadius: 6,
   },
   progressText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
+    fontFamily: type.emphasis,
+    color: palette.text,
     width: 80,
     textAlign: 'right',
   },
   progressPercent: {
     fontSize: 12,
-    color: '#666',
+    color: palette.textMuted,
+    fontFamily: type.body,
     marginTop: 8,
   },
   emptyState: {
@@ -264,13 +272,14 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
+    fontFamily: type.title,
+    color: palette.text,
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#666',
+    color: palette.textMuted,
+    fontFamily: type.body,
     textAlign: 'center',
   },
   modalOverlay: {
@@ -279,21 +288,22 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#FFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
+    backgroundColor: palette.surface,
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
+    padding: spacing.xl,
   },
   modalTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    color: palette.text,
+    fontFamily: type.display,
     marginBottom: 20,
     textAlign: 'center',
   },
   inputLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
+    fontFamily: type.emphasis,
+    color: palette.textMuted,
     marginBottom: 8,
     marginTop: 12,
   },
@@ -305,25 +315,29 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: palette.surfaceMuted,
     alignItems: 'center',
   },
   typeBtnActive: {
-    backgroundColor: '#DA0D57',
+    backgroundColor: palette.primary,
   },
   typeText: {
     fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
+    color: palette.textMuted,
+    fontFamily: type.emphasis,
   },
   typeTextActive: {
     color: '#FFF',
   },
   input: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: palette.surfaceMuted,
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
+    borderWidth: 1,
+    borderColor: palette.border,
+    color: palette.text,
+    fontFamily: type.body,
   },
   modalButtons: {
     flexDirection: 'row',
@@ -334,24 +348,24 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 16,
     borderRadius: 12,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: palette.surfaceMuted,
     alignItems: 'center',
   },
   cancelBtnText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#666',
+    fontFamily: type.emphasis,
+    color: palette.textMuted,
   },
   saveBtn: {
     flex: 1,
     paddingVertical: 16,
     borderRadius: 12,
-    backgroundColor: '#DA0D57',
+    backgroundColor: palette.primary,
     alignItems: 'center',
   },
   saveBtnText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: type.emphasis,
     color: '#FFF',
   },
 });

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView,View ,Text, Button, StyleSheet, TouchableOpacity,TextInput } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
 import { CountdownCircleTimer } from 'react-native-countdown-circle-timer';
 import { createReadingSession } from '../../../apis/readingSessions/readingSessions';
@@ -99,7 +100,7 @@ const ReadingTracker = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <CountdownCircleTimer
         key={key}
         isPlaying={isPlaying}
@@ -171,7 +172,7 @@ const ReadingTracker = () => {
         duration={duration}
       />
 
-    </View>
+    </SafeAreaView>
   );
 };
 

@@ -1,10 +1,12 @@
+const { getApiBaseUrl } = require('../../utils/apiBaseUrl');
+
 // Highlights API calls
 
 const getHighlights = async (userToken, bookId) => {
     try {
         const url = bookId 
-            ? `${process.env.BASE_URL}/v1/highlights/book/${bookId}`
-            : `${process.env.BASE_URL}/v1/highlights`;
+            ? `${getApiBaseUrl()}/v1/highlights/book/${bookId}`
+            : `${getApiBaseUrl()}/v1/highlights`;
             
         const response = await fetch(url, {
             method: 'GET',
@@ -25,7 +27,7 @@ const getHighlights = async (userToken, bookId) => {
 
 const createHighlight = async (userToken, { userBookId, content, pageNumber, chapter, color, note }) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/highlights`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/highlights`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -45,7 +47,7 @@ const createHighlight = async (userToken, { userBookId, content, pageNumber, cha
 
 const updateHighlight = async (userToken, id, { color, note }) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/highlights/${id}`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/highlights/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -65,7 +67,7 @@ const updateHighlight = async (userToken, id, { color, note }) => {
 
 const deleteHighlight = async (userToken, id) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/highlights/${id}`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/highlights/${id}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',

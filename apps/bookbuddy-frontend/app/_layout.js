@@ -1,16 +1,16 @@
 import { Slot } from 'expo-router';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 
 import { AuthProvider } from '../context/AuthContext';
 
 export default function RootLayout() {
-    return (
-        <AuthProvider>
-            <Slot
-                name="start"
-                fallback={<div>Loading...</div>}
-                initialRouteName='start'
-             />
-        </AuthProvider>
-    );
- 
+  return (
+    <SafeAreaProvider>
+      <AuthProvider>
+        <StatusBar style="dark" />
+        <Slot />
+      </AuthProvider>
+    </SafeAreaProvider>
+  );
 }

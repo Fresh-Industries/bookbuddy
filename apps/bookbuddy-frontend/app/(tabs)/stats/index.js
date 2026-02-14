@@ -1,10 +1,12 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { getStats, getHistory } from '../../apis/stats/stats';
-import { useAuth } from '../../context/AuthContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { getStats, getHistory } from '../../../apis/stats/stats';
+import { useAuth } from '../../../context/AuthContext';
+import { palette, radius, shadow, spacing, type } from '../../../theme/tokens';
 
-const { width } = Dimensions.get('window');
+const PERIODS = ['week', 'month', 'year'];
 
 const StatsScreen = () => {
   const { authToken } = useAuth();
@@ -18,9 +20,9 @@ const StatsScreen = () => {
         if (!authToken) return;
         try {
           const statsData = await getStats(authToken);
-          setStats(statsData);
           const historyData = await getHistory(authToken, period);
-          setHistory(historyData);
+          setStats(statsData || null);
+          setHistory(historyData || {});
         } catch (error) {
           console.error('Error fetching stats:', error);
         }
@@ -29,238 +31,257 @@ const StatsScreen = () => {
     }, [authToken, period])
   );
 
-  const getWeeklyData = () => {
+  const weeklyData = useMemo(() => {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const today = new Date();
-    const weekData = [];
-    
-    for (let i = 6; i >= 0; i--) {
+    return Array.from({ length: 7 }).map((_, idx) => {
+      const offset = 6 - idx;
       const date = new Date(today);
-      date.setDate(date.getDate() - i);
+      date.setDate(date.getDate() - offset);
       const dateStr = date.toISOString().split('T')[0];
-      weekData.push({
+      return {
         day: days[date.getDay()],
-        pages: history[dateStr]?.pages || 0,
-        isToday: i === 0
-      });
-    }
-    return weekData;
-  };
+        pages: history?.[dateStr]?.pages || 0,
+        isToday: offset === 0,
+      };
+    });
+  }, [history]);
 
-  const maxPages = Math.max(...getWeeklyData().map(d => d.pages), 1);
+  const maxPages = Math.max(...weeklyData.map((d) => d.pages), 1);
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>📊 Reading Stats</Text>
-      
-      {/* Streak Card */}
-      <View style={styles.streakCard}>
-        <Text style={styles.streakNumber}>{stats?.currentStreak || 0}</Text>
-        <Text style={styles.streakLabel}>Day Streak 🔥</Text>
-        <Text style={styles.streakSubtext}>Longest: {stats?.longestStreak || 0} days</Text>
-      </View>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <Text style={styles.title}>Reading Analytics</Text>
 
-      {/* Weekly Chart */}
-      <View style={styles.chartCard}>
-        <Text style={styles.cardTitle}>This Week</Text>
-        <View style={styles.chart}>
-          {getWeeklyData().map((day, index) => (
-            <View key={index} style={styles.barContainer}>
-              <View style={styles.barWrapper}>
-                <View 
-                  style={[
-                    styles.bar, 
-                    { height: `${(day.pages / maxPages) * 100}%` },
-                    day.isToday && styles.todayBar
-                  ]} 
-                />
+        <View style={styles.heroCard}>
+          <Text style={styles.heroLabel}>Current Streak</Text>
+          <View style={styles.heroRow}>
+            <Text style={styles.heroValue}>{stats?.currentStreak || 0}</Text>
+            <Text style={styles.heroUnit}>days</Text>
+          </View>
+          <Text style={styles.heroSub}>Longest: {stats?.longestStreak || 0} days</Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>This Week</Text>
+          <View style={styles.chart}>
+            {weeklyData.map((day) => (
+              <View key={day.day} style={styles.barContainer}>
+                <View style={styles.barTrack}>
+                  <View
+                    style={[
+                      styles.barFill,
+                      { height: `${Math.max((day.pages / maxPages) * 100, day.pages > 0 ? 8 : 0)}%` },
+                      day.isToday && styles.barFillToday,
+                    ]}
+                  />
+                </View>
+                <Text style={[styles.barLabel, day.isToday && styles.barLabelToday]}>{day.day}</Text>
+                <Text style={styles.barValue}>{day.pages}</Text>
               </View>
-              <Text style={[styles.barLabel, day.isToday && styles.todayLabel]}>{day.day}</Text>
-              <Text style={styles.barValue}>{day.pages}</Text>
-            </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.grid}>
+          <View style={styles.metric}>
+            <Text style={styles.metricValue}>{stats?.totalPagesRead || 0}</Text>
+            <Text style={styles.metricLabel}>Pages Read</Text>
+          </View>
+          <View style={styles.metric}>
+            <Text style={styles.metricValue}>{stats?.totalBooksRead || 0}</Text>
+            <Text style={styles.metricLabel}>Books Finished</Text>
+          </View>
+          <View style={styles.metric}>
+            <Text style={styles.metricValue}>{Math.round((stats?.totalMinutesRead || 0) / 60)}h</Text>
+            <Text style={styles.metricLabel}>Reading Time</Text>
+          </View>
+          <View style={styles.metric}>
+            <Text style={styles.metricValue}>{stats?.longestStreak || 0}</Text>
+            <Text style={styles.metricLabel}>Best Streak</Text>
+          </View>
+        </View>
+
+        <View style={styles.segment}>
+          {PERIODS.map((value) => (
+            <TouchableOpacity
+              key={value}
+              style={[styles.segmentItem, period === value && styles.segmentItemActive]}
+              onPress={() => setPeriod(value)}
+            >
+              <Text style={[styles.segmentText, period === value && styles.segmentTextActive]}>
+                {value[0].toUpperCase() + value.slice(1)}
+              </Text>
+            </TouchableOpacity>
           ))}
         </View>
-      </View>
-
-      {/* Stats Grid */}
-      <View style={styles.statsGrid}>
-        <View style={styles.statBox}>
-          <Text style={styles.statNumber}>{stats?.totalPagesRead || 0}</Text>
-          <Text style={styles.statLabel}>Pages Read</Text>
-        </View>
-        <View style={styles.statBox}>
-          <Text style={styles.statNumber}>{stats?.totalBooksRead || 0}</Text>
-          <Text style={styles.statLabel}>Books</Text>
-        </View>
-        <View style={styles.statBox}>
-          <Text style={styles.statNumber}>{Math.round((stats?.totalMinutesRead || 0) / 60)}h</Text>
-          <Text style={styles.statLabel}>Time Read</Text>
-        </View>
-        <View style={styles.statBox}>
-          <Text style={styles.statNumber}>{stats?.longestStreak || 0}</Text>
-          <Text style={styles.statLabel}>Best Streak</Text>
-        </View>
-      </View>
-
-      {/* Period Selector */}
-      <View style={styles.periodSelector}>
-        <TouchableOpacity 
-          style={[styles.periodBtn, period === 'week' && styles.periodActive]}
-          onPress={() => setPeriod('week')}
-        >
-          <Text style={[styles.periodText, period === 'week' && styles.periodTextActive]}>Week</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.periodBtn, period === 'month' && styles.periodActive]}
-          onPress={() => setPeriod('month')}
-        >
-          <Text style={[styles.periodText, period === 'month' && styles.periodTextActive]}>Month</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.periodBtn, period === 'year' && styles.periodActive]}
-          onPress={() => setPeriod('year')}
-        >
-          <Text style={[styles.periodText, period === 'year' && styles.periodTextActive]}>Year</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
-    padding: 16,
+    backgroundColor: palette.background,
+  },
+  content: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl,
+    paddingBottom: 120,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#333',
+    fontSize: 30,
+    color: palette.text,
+    fontFamily: type.display,
+    marginBottom: spacing.md,
   },
-  streakCard: {
-    backgroundColor: '#FF6B35',
-    borderRadius: 20,
-    padding: 30,
-    alignItems: 'center',
-    marginBottom: 20,
+  heroCard: {
+    backgroundColor: '#0F1A2E',
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+    ...shadow,
   },
-  streakNumber: {
-    fontSize: 64,
-    fontWeight: 'bold',
-    color: '#FFF',
+  heroLabel: {
+    color: '#AFC2DF',
+    fontSize: 13,
+    fontFamily: type.emphasis,
   },
-  streakLabel: {
-    fontSize: 20,
-    color: '#FFF',
-    fontWeight: '600',
+  heroRow: {
+    marginTop: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: spacing.xs,
   },
-  streakSubtext: {
+  heroValue: {
+    color: '#FFFFFF',
+    fontSize: 56,
+    lineHeight: 60,
+    fontFamily: type.display,
+  },
+  heroUnit: {
+    color: '#E2EAF7',
+    fontSize: 18,
+    paddingBottom: spacing.xs,
+    fontFamily: type.title,
+  },
+  heroSub: {
+    marginTop: spacing.xs,
+    color: '#BFD0EA',
     fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 5,
+    fontFamily: type.body,
   },
-  chartCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 20,
+  card: {
+    backgroundColor: palette.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: palette.border,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    ...shadow,
   },
   cardTitle: {
+    color: palette.text,
     fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
-    color: '#333',
+    fontFamily: type.title,
+    marginBottom: spacing.sm,
   },
   chart: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    height: 120,
+    height: 124,
   },
   barContainer: {
-    alignItems: 'center',
     flex: 1,
+    alignItems: 'center',
   },
-  barWrapper: {
-    height: 80,
-    width: 30,
+  barTrack: {
+    width: 28,
+    height: 84,
+    borderRadius: radius.sm,
+    backgroundColor: '#E9EFF7',
     justifyContent: 'flex-end',
-    backgroundColor: '#E0E0E0',
-    borderRadius: 6,
     overflow: 'hidden',
   },
-  bar: {
+  barFill: {
     width: '100%',
-    backgroundColor: '#DA0D57',
-    borderRadius: 6,
-    minHeight: 4,
+    backgroundColor: '#7AB4FF',
+    borderRadius: radius.sm,
   },
-  todayBar: {
-    backgroundColor: '#FF6B35',
+  barFillToday: {
+    backgroundColor: palette.primary,
   },
   barLabel: {
+    marginTop: spacing.xs,
     fontSize: 12,
-    color: '#666',
-    marginTop: 8,
+    color: palette.textMuted,
+    fontFamily: type.body,
   },
-  todayLabel: {
-    color: '#FF6B35',
-    fontWeight: '600',
+  barLabelToday: {
+    color: palette.primary,
+    fontFamily: type.emphasis,
   },
   barValue: {
-    fontSize: 10,
-    color: '#999',
     marginTop: 2,
+    fontSize: 11,
+    color: palette.textMuted,
+    fontFamily: type.mono,
   },
-  statsGrid: {
+  grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: spacing.md,
+    gap: spacing.sm,
   },
-  statBox: {
-    width: (width - 48) / 2 - 8,
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    marginBottom: 12,
+  metric: {
+    width: '48%',
+    backgroundColor: palette.surface,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: palette.border,
+    padding: spacing.md,
+    ...shadow,
   },
-  statNumber: {
+  metricValue: {
+    color: palette.text,
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
+    fontFamily: type.display,
   },
-  statLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
+  metricLabel: {
+    color: palette.textMuted,
+    fontSize: 13,
+    marginTop: spacing.xs,
+    fontFamily: type.body,
   },
-  periodSelector: {
-    flexDirection: 'row',
-    backgroundColor: '#FFF',
-    borderRadius: 12,
+  segment: {
+    backgroundColor: palette.surface,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: palette.border,
     padding: 4,
-    marginBottom: 20,
+    flexDirection: 'row',
+    ...shadow,
   },
-  periodBtn: {
+  segmentItem: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.pill,
     alignItems: 'center',
-    borderRadius: 8,
   },
-  periodActive: {
-    backgroundColor: '#DA0D57',
+  segmentItemActive: {
+    backgroundColor: palette.primary,
   },
-  periodText: {
+  segmentText: {
+    color: palette.textMuted,
     fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
+    fontFamily: type.emphasis,
   },
-  periodTextActive: {
-    color: '#FFF',
+  segmentTextActive: {
+    color: '#FFFFFF',
   },
 });
 

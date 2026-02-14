@@ -1,6 +1,18 @@
+const { getApiBaseUrl } = require('../../utils/apiBaseUrl');
+
+const getErrorMessage = async (response, fallback) => {
+    const bodyText = await response.text();
+    return `${fallback} (${response.status})${bodyText ? `: ${bodyText}` : ''}`;
+};
+
 const searchBooks = async (query) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/books/search-books?query=${query}`, {
+        const normalizedQuery = `${query ?? ''}`.trim();
+        if (!normalizedQuery) {
+            return { items: [] };
+        }
+
+        const response = await fetch(`${getApiBaseUrl()}/v1/books/search-books?query=${encodeURIComponent(normalizedQuery)}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -8,7 +20,7 @@ const searchBooks = async (query) => {
 
         })
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(await getErrorMessage(response, 'Book search failed'));
         }
 
         return response.json();
@@ -21,7 +33,7 @@ const searchBooks = async (query) => {
 
 const getBook = async (id) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/books/books/${id}`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/books/books/${id}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -29,7 +41,7 @@ const getBook = async (id) => {
 
         })
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(await getErrorMessage(response, 'Failed to fetch book'));
         }
 
         return response.json();
@@ -42,7 +54,7 @@ const getBook = async (id) => {
 
 const addBookToLibrary = async (bookDetails, userToken) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/books/add-book`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/books/add-book`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -51,7 +63,7 @@ const addBookToLibrary = async (bookDetails, userToken) => {
             body: JSON.stringify(bookDetails),
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(await getErrorMessage(response, 'Failed to add book'));
         }
         return response.json();
     } catch (error) {
@@ -62,7 +74,7 @@ const addBookToLibrary = async (bookDetails, userToken) => {
 
 const getUserBooks = async (userToken) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/books/getUserBooks`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/books/getUserBooks`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -70,7 +82,7 @@ const getUserBooks = async (userToken) => {
             },
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(await getErrorMessage(response, 'Failed to fetch user books'));
         }
         return response.json();
     } catch (error) {
@@ -81,7 +93,7 @@ const getUserBooks = async (userToken) => {
 
 const updateUserBook = async (userToken, id, data) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/books/updateBook/${id} `, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/books/updateBook/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -90,7 +102,7 @@ const updateUserBook = async (userToken, id, data) => {
             body: JSON.stringify(data),
         })
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(await getErrorMessage(response, 'Failed to update book'));
         }
 
         

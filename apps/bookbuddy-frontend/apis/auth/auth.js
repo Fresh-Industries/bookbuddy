@@ -1,17 +1,19 @@
-// Better Auth API calls
-// Backend uses Better Auth which has different endpoints than the old implementation
+const { getApiBaseUrl } = require('../../utils/apiBaseUrl');
+
+// JWT auth API calls
 
 const signup = async (data) => {
+    const API_BASE_URL = getApiBaseUrl();
+    const signupUrl = `${API_BASE_URL}/v1/auth/signup`;
     try {
-        const response = await fetch(`${process.env.BASE_URL}/api/signUp`, {
+        const response = await fetch(signupUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 email: data.email,
-                password: data.password,
-                name: data.name || data.email.split('@')[0]
+                password: data.password
             }),
         });
         if (!response.ok) {
@@ -19,18 +21,19 @@ const signup = async (data) => {
             throw new Error(error.message || 'Signup failed');
         }
       
-        const session = await response.json();
-        // Return in format frontend expects: { token: accessToken }
-        return { token: session.session?.accessToken || session.accessToken };
+        const payload = await response.json();
+        return { token: payload.token };
     } catch (error) {
-        console.error('Error with signup API call:', error);
+        console.error('Error with signup API call:', { url: signupUrl, error });
         throw error;
     }
 };
 
 const login = async (data) => {
+    const API_BASE_URL = getApiBaseUrl();
+    const loginUrl = `${API_BASE_URL}/v1/auth/login`;
     try {
-        const response = await fetch(`${process.env.BASE_URL}/api/signIn/email`, {
+        const response = await fetch(loginUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -45,18 +48,18 @@ const login = async (data) => {
             throw new Error(error.message || 'Login failed');
         }
       
-        const session = await response.json();
-        // Return in format frontend expects: { token: accessToken }
-        return { token: session.session?.accessToken || session.accessToken };
+        const payload = await response.json();
+        return { token: payload.token };
     } catch (error) {
-        console.error('Error with login API call:', error);
+        console.error('Error with login API call:', { url: loginUrl, error });
         throw error;
     }
 };
 
 const logout = async (userToken) => {
+    const API_BASE_URL = getApiBaseUrl();
     try {
-        const response = await fetch(`${process.env.BASE_URL}/api/signOut`, {
+        const response = await fetch(`${API_BASE_URL}/api/signOut`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -76,8 +79,9 @@ const logout = async (userToken) => {
 };
 
 const getSession = async (userToken) => {
+    const API_BASE_URL = getApiBaseUrl();
     try {
-        const response = await fetch(`${process.env.BASE_URL}/api/session`, {
+        const response = await fetch(`${API_BASE_URL}/api/session`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${userToken}`

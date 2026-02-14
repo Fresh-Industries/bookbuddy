@@ -3,28 +3,65 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 import 'dotenv/config'; 
 
+const GOOGLE_BOOKS_BASE_URL = process.env.GOOGLE_BOOKS_API_URL || 'https://www.googleapis.com/books/v1/volumes';
+
+const hasUsableGoogleApiKey = () => {
+    const key = process.env.GOOGLE_API_KEY?.trim();
+    return !!key && key.toLowerCase() !== 'your-google-api-key';
+};
+
+const buildGoogleBooksUrl = ({ id, query }) => {
+    const baseUrl = id ? `${GOOGLE_BOOKS_BASE_URL}/${encodeURIComponent(id)}` : GOOGLE_BOOKS_BASE_URL;
+    const url = new URL(baseUrl);
+
+    if (query) {
+        url.searchParams.set('q', query);
+    }
+
+    if (hasUsableGoogleApiKey()) {
+        url.searchParams.set('key', process.env.GOOGLE_API_KEY.trim());
+    }
+
+    return url.toString();
+};
+
+const sendGoogleBooksError = (error, res, fallbackMessage) => {
+    if (axios.isAxiosError(error)) {
+        const status = error.response?.status || 500;
+        const details = error.response?.data?.error?.message || error.response?.statusText || fallbackMessage;
+        return res.status(status).json({ error: fallbackMessage, details });
+    }
+
+    return res.status(500).json({ error: fallbackMessage });
+};
 
 export const searchBooks = async (req, res) => {
     try {
         const { query } = req.query; 
-        const response = await axios.get(`${process.env.GOOGLE_BOOKS_API_URL}?q=${query}&key=${process.env.GOOGLE_API_KEY}`);
+        if (!query || !`${query}`.trim()) {
+            return res.status(400).json({ error: 'Query is required' });
+        }
+
+        const response = await axios.get(buildGoogleBooksUrl({ query: `${query}`.trim() }));
         res.json(response.data);
     } catch (error) {
         console.error('Error fetching data from Google Books API:', error);
-        res.status(500).send('Error fetching book data');
+        return sendGoogleBooksError(error, res, 'Error fetching book data');
     }
 };
 
 export const getBook = async (req, res) => {
     try {
         const { id } = req.params; 
+        if (!id) {
+            return res.status(400).json({ error: 'Book id is required' });
+        }
 
-
-        const response = await axios.get(`${process.env.GOOGLE_BOOKS_API_URL}/${id}?key=${process.env.GOOGLE_API_KEY}`);
+        const response = await axios.get(buildGoogleBooksUrl({ id }));
         res.json(response.data);
     } catch (error) {
         console.error('Error fetching data from Google Books API:', error);
-        res.status(500).send('Error fetching book data');
+        return sendGoogleBooksError(error, res, 'Error fetching book data');
     }
 }
 

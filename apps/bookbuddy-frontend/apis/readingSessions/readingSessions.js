@@ -1,6 +1,8 @@
+const { getApiBaseUrl } = require('../../utils/apiBaseUrl');
+
 const createReadingSession = async (token,data) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/reading-sessions/new-reading-session`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/reading-sessions/new-reading-session`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

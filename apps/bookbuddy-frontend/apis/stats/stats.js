@@ -1,8 +1,14 @@
+const { getApiBaseUrl } = require('../../utils/apiBaseUrl');
+
 // Stats API calls
+const getErrorMessage = async (response, fallback) => {
+    const bodyText = await response.text();
+    return `${fallback} (${response.status})${bodyText ? `: ${bodyText}` : ''}`;
+};
 
 const getStats = async (userToken) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/stats/stats`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/stats/stats`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -10,7 +16,7 @@ const getStats = async (userToken) => {
             },
         });
         if (!response.ok) {
-            throw new Error('Failed to fetch stats');
+            throw new Error(await getErrorMessage(response, 'Failed to fetch stats'));
         }
         return response.json();
     } catch (error) {
@@ -21,7 +27,7 @@ const getStats = async (userToken) => {
 
 const updateStreak = async (userToken, { pagesRead, minutesRead }) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/stats/update-streak`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/stats/update-streak`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -30,7 +36,7 @@ const updateStreak = async (userToken, { pagesRead, minutesRead }) => {
             body: JSON.stringify({ pagesRead, minutesRead }),
         });
         if (!response.ok) {
-            throw new Error('Failed to update streak');
+            throw new Error(await getErrorMessage(response, 'Failed to update streak'));
         }
         return response.json();
     } catch (error) {
@@ -41,7 +47,7 @@ const updateStreak = async (userToken, { pagesRead, minutesRead }) => {
 
 const getHistory = async (userToken, period = 'month') => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/stats/history?period=${period}`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/stats/history?period=${period}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -49,7 +55,7 @@ const getHistory = async (userToken, period = 'month') => {
             },
         });
         if (!response.ok) {
-            throw new Error('Failed to fetch history');
+            throw new Error(await getErrorMessage(response, 'Failed to fetch history'));
         }
         return response.json();
     } catch (error) {

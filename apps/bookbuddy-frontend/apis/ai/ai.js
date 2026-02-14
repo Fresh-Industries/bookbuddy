@@ -1,6 +1,8 @@
+const { getApiBaseUrl } = require('../../utils/apiBaseUrl');
+
 const chatbot = async (data) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/ai/chatbot`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/ai/chatbot`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -20,7 +22,7 @@ const chatbot = async (data) => {
 
 const readingSessionChatbot = async (data, id) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/ai/readingSessionChatbot`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/ai/readingSessionChatbot`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

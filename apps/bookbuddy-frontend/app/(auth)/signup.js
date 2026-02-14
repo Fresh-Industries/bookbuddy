@@ -1,21 +1,37 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Image } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Image, Animated } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { signup } from '../../apis/auth/auth';
-import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
 import { saveToken } from '../../utils/secureStore';
+import { motion, palette, radius, shadow, spacing, type } from '../../theme/tokens';
 
 const SignupScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordsMatch, setPasswordsMatch] = useState(true);
   const [loading, setLoading] = useState(false);
-  const navigation = useNavigation();
+  const [errorMessage, setErrorMessage] = useState('');
+  const cardAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(cardAnim, {
+      toValue: 1,
+      duration: motion.medium,
+      useNativeDriver: true,
+    }).start();
+  }, [cardAnim]);
 
   const handleSignup = async () => {
-    setPasswordsMatch(true); // Reset password match state
+    setErrorMessage('');
+
+    if (!email.trim() || !password) {
+      setErrorMessage('Enter an email and password.');
+      return;
+    }
+
     if (password !== confirmPassword) {
-      setPasswordsMatch(false);
+      setErrorMessage('Passwords do not match.');
       return;
     }
 
@@ -23,122 +39,183 @@ const SignupScreen = () => {
     try {
       const data = { email, password };
       const response = await signup(data);
-      if(response && response.token){
+      if (response && response.token) {
         await saveToken(response.token);
-        setLoading(false);
-        navigation.navigate('home');
+        router.replace('/home');
       }
     } catch (error) {
       console.error('Error with signup:', error);
+      setErrorMessage(error?.message || 'Could not create account right now.');
+    } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <View style={styles.topAura} />
+      <View style={styles.bottomAura} />
+
+      <Animated.View
+        style={[
+          styles.card,
+          {
+            opacity: cardAnim,
+            transform: [
+              {
+                translateY: cardAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [16, 0],
+                }),
+              },
+            ],
+          },
+        ]}
+      >
         <Image source={require('../../assets/logo.png')} style={styles.logo} />
-        <Text style={styles.headerTitle}>BookBuddy</Text>
-      </View>
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Confirm Password"
-        secureTextEntry
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-      />
-      {!passwordsMatch && <Text style={styles.errorText}>Passwords do not match.</Text>}
-      {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
-      ) : (
-        <TouchableOpacity style={styles.button} onPress={handleSignup}>
-          <Text style={styles.buttonText}>Sign Up</Text>
+        <Text style={styles.title}>Create Your Account</Text>
+        <Text style={styles.subtitle}>Build your personal reading dashboard in seconds.</Text>
+
+        <TextInput
+          style={styles.input}
+          placeholder="Email address"
+          placeholderTextColor={palette.textMuted}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+          value={email}
+          onChangeText={setEmail}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor={palette.textMuted}
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Confirm password"
+          placeholderTextColor={palette.textMuted}
+          secureTextEntry
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+        />
+
+        {!!errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
+
+        <TouchableOpacity style={styles.button} onPress={handleSignup} disabled={loading}>
+          {loading ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <Text style={styles.buttonText}>Create Account</Text>
+          )}
         </TouchableOpacity>
-      )}
-      <TouchableOpacity style={styles.switchButton} onPress={() => navigation.navigate('login')}>
-        <Text>Already have an account? Login</Text>
-      </TouchableOpacity>
-    </View>
+
+        <TouchableOpacity style={styles.linkBtn} onPress={() => router.push('/login')} disabled={loading}>
+          <Text style={styles.linkText}>Already have an account? Sign in</Text>
+        </TouchableOpacity>
+      </Animated.View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
-    backgroundColor: '#f5f5f5',
+    paddingHorizontal: spacing.lg,
+    backgroundColor: palette.background,
   },
-  header: {
-    marginBottom: 32,
-    alignItems: 'center',
+  topAura: {
+    position: 'absolute',
+    top: -120,
+    right: -70,
+    width: 230,
+    height: 230,
+    borderRadius: 115,
+    backgroundColor: '#D8E7FF',
+  },
+  bottomAura: {
+    position: 'absolute',
+    bottom: -120,
+    left: -90,
+    width: 290,
+    height: 290,
+    borderRadius: 145,
+    backgroundColor: '#DCEBFB',
+  },
+  card: {
+    backgroundColor: palette.surface,
+    borderRadius: radius.lg,
+    padding: spacing.xl,
+    borderWidth: 1,
+    borderColor: palette.border,
+    ...shadow,
   },
   logo: {
-    width: 240,
-    height: 240,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333', // Ensuring consistency with the app's color scheme
+    width: 98,
+    height: 98,
+    alignSelf: 'center',
+    marginBottom: spacing.sm,
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 20,
+    fontSize: 30,
+    color: palette.text,
+    fontFamily: type.display,
+    textAlign: 'center',
+  },
+  subtitle: {
+    marginTop: spacing.xs,
+    marginBottom: spacing.lg,
+    fontSize: 15,
+    fontFamily: type.body,
+    color: palette.textMuted,
+    textAlign: 'center',
+    lineHeight: 22,
   },
   input: {
     width: '100%',
-    height: 50,
-    backgroundColor: '#fff',
-    borderRadius: 25,
-    paddingHorizontal: 16,
+    backgroundColor: palette.surfaceMuted,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
     fontSize: 16,
-    color: '#333',
-    marginBottom: 16,
+    color: palette.text,
+    fontFamily: type.body,
+    marginBottom: spacing.sm,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: palette.border,
   },
   button: {
-    width: '100%',
-    height: 50,
-    backgroundColor: '#DA0D57',
-    borderRadius: 25,
+    marginTop: spacing.sm,
+    backgroundColor: palette.primary,
+    borderRadius: radius.pill,
+    paddingVertical: spacing.md,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    ...shadow,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontFamily: type.title,
   },
   errorText: {
-    color: 'red',
-    marginBottom: 16,
+    color: palette.danger,
+    fontFamily: type.emphasis,
+    marginTop: spacing.xs,
+    marginBottom: spacing.xs,
   },
-  switchButton: {
-    marginTop: 10,
+  linkBtn: {
+    marginTop: spacing.md,
+    alignItems: 'center',
   },
-  switchButtonText: {
-    color: '#007bff',
-    fontSize: 16,
+  linkText: {
+    color: palette.textMuted,
+    fontSize: 14,
+    fontFamily: type.body,
   },
 });
 

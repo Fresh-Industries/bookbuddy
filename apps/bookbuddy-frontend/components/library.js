@@ -4,6 +4,7 @@ import { getUserBooks } from '../apis/books/books';
 import { useAuth } from '../context/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
+import { palette, radius, spacing, type } from '../theme/tokens';
 
 const Library = () => {
   const { authToken } = useAuth();
@@ -38,7 +39,20 @@ const Library = () => {
   };
 
   if (isLoading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
+    return (
+      <View style={styles.loadingWrap}>
+        <ActivityIndicator size="small" color={palette.primary} />
+      </View>
+    );
+  }
+
+  if (!userBooks.length) {
+    return (
+      <View style={styles.emptyWrap}>
+        <Text style={styles.emptyTitle}>No books yet</Text>
+        <Text style={styles.emptySubtitle}>Search for a title and start building your shelf.</Text>
+      </View>
+    );
   }
 
   return (
@@ -54,29 +68,51 @@ const Library = () => {
 };
 
 const styles = StyleSheet.create({
+  loadingWrap: {
+    paddingVertical: spacing.xl,
+    alignItems: 'center',
+  },
+  emptyWrap: {
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.lg,
+    alignItems: 'center',
+  },
+  emptyTitle: {
+    color: palette.text,
+    fontSize: 18,
+    fontFamily: type.title,
+  },
+  emptySubtitle: {
+    marginTop: spacing.xs,
+    color: palette.textMuted,
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+    fontFamily: type.body,
+  },
   library: {
-    flexDirection: 'row', // Changed to row for horizontal layout
-    padding: 10,
+    flexDirection: 'row',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
   bookCard: {
-    width: 100, // Adjusted for a snug fit in horizontal layout
+    width: 112,
     backgroundColor: '#fff',
-    borderRadius: 10,
-    marginRight: 20, // Adjusted for spacing between books
+    borderRadius: radius.md,
+    marginRight: spacing.md,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 4,
   },
   image: {
-    width: '100%', // Adjusted to fill the width of the bookCard
-    height: 160,
+    width: '100%',
+    height: 170,
     resizeMode: 'cover',
-    borderRadius: 10,
+    borderRadius: radius.md,
   },
 });
 
 export default Library;
-

@@ -1,8 +1,10 @@
+const { getApiBaseUrl } = require('../../utils/apiBaseUrl');
+
 // Goals API calls
 
 const getGoals = async (userToken) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/goals`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/goals`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -21,7 +23,7 @@ const getGoals = async (userToken) => {
 
 const createGoal = async (userToken, { year, month, type, target }) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/goals`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/goals`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -41,7 +43,7 @@ const createGoal = async (userToken, { year, month, type, target }) => {
 
 const updateGoalProgress = async (userToken, id, progress) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/goals/${id}/progress`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/goals/${id}/progress`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -61,7 +63,7 @@ const updateGoalProgress = async (userToken, id, progress) => {
 
 const deleteGoal = async (userToken, id) => {
     try {
-        const response = await fetch(`${process.env.BASE_URL}/v1/goals/${id}`, {
+        const response = await fetch(`${getApiBaseUrl()}/v1/goals/${id}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',

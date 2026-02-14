@@ -3,6 +3,8 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 import jwt from 'jsonwebtoken';
 
+const JWT_SECRET = process.env.JWT_SECRET || process.env.BETTER_AUTH_SECRET || 'dev-secret';
+
 export const createUser = async (req, res) => {
     try {
       console.log("createUser called");
@@ -44,7 +46,7 @@ export const createUser = async (req, res) => {
   
       
       // Generate JWT token
-      const token = jwt.sign({ UserId: newUser.id, email: newUser.email }, process.env.JWT_SECRET, { expiresIn: '24h' });
+      const token = jwt.sign({ UserId: newUser.id, email: newUser.email }, JWT_SECRET, { expiresIn: '24h' });
       console.log("signed up successfully!");
       res.json({ 
         result: newUser,
@@ -87,7 +89,7 @@ export const createUser = async (req, res) => {
         }
 
         // Generate JWT token
-        const token = jwt.sign({ UserId: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '24h' });
+        const token = jwt.sign({ UserId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '24h' });
         console.log("Logged in successfully!");
         res.json({ 
           result: user,

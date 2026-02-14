@@ -8,10 +8,8 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
 } from 'react-native';
-import { Avatar } from 'react-native-elements';
-import Icon from 'react-native-vector-icons/Feather';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { chatbot } from '../../../apis/ai/ai';
 
 export default function Chatbot() {
@@ -56,12 +54,9 @@ export default function Chatbot() {
 
   const renderItem = useCallback(({ item }) => (
     <View style={[styles.messageRow, item.isUserMessage ? styles.userMessageRow : styles.botMessageRow]}>
-      <Avatar
-        size="small"
-        rounded
-        source={{ uri: item.isUserMessage ? "https://your-image-source/user.jpg" : "https://your-image-source/chatbot.jpg" }}
-        containerStyle={styles.avatar}
-      />
+      <View style={[styles.avatar, { backgroundColor: item.isUserMessage ? '#007BFF' : '#18b4b4' }]}>
+        <Text style={styles.avatarLabel}>{item.isUserMessage ? 'U' : 'B'}</Text>
+      </View>
       <View style={[styles.message, item.isUserMessage ? styles.userMessage : styles.botMessage]}>
         <Text style={styles.time}>{item.timestamp}</Text>
         <Text style={styles.messageText}>{item.message}</Text>
@@ -72,13 +67,9 @@ export default function Chatbot() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Avatar
-          size="medium"
-          rounded
-          source={{ uri: "https://your-image-source/avatar.jpg" }}
-          title="CB"
-          containerStyle={styles.headerAvatar}
-        />
+        <View style={[styles.avatar, styles.headerAvatar]}>
+          <Text style={styles.avatarLabel}>B</Text>
+        </View>
         <Text style={styles.title}>Bookworm Chat</Text>
         <Text style={styles.subtitle}>Engage in insightful conversations about books</Text>
       </View>
@@ -104,7 +95,7 @@ export default function Chatbot() {
           onSubmitEditing={sendMessage}
         />
         <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-          <Icon name="send" size={24} color="#007BFF" />
+          <Text style={styles.sendButtonText}>Send</Text>
         </TouchableOpacity>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -154,6 +145,15 @@ const styles = StyleSheet.create({
   },
   avatar: {
     marginRight: 10,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarLabel: {
+    color: '#fff',
+    fontWeight: '700',
   },
   message: {
     maxWidth: '70%',
@@ -204,5 +204,10 @@ const styles = StyleSheet.create({
   sendButton: {
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 8,
+  },
+  sendButtonText: {
+    color: '#007BFF',
+    fontWeight: '700',
   },
 });
