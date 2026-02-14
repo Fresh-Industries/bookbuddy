@@ -15,7 +15,9 @@ function verify(req: AuthReq, res: Response, next: Function) {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
     req.UserId = decoded.userId;
     next();
-  } catch { res.status(401).json({ error: 'Invalid token' });
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+  }
 }
 
 // Stats
@@ -49,7 +51,7 @@ router.post('/update-streak', verify, async (req: AuthReq, res: Response) => {
   } catch (e) { res.status(500).json({ error: 'Failed' }); }
 });
 
-router.get('/history', verify, async (req: AuthReq) => {
+router.get('/history', verify, async (req: AuthReq, res: Response) => {
   const start = new Date();
   if (req.query.period === 'week') start.setDate(start.getDate() - 7);
   else if (req.query.period === 'year') start.setFullYear(start.getFullYear() - 1);

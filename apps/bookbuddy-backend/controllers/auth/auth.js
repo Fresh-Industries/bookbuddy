@@ -1,9 +1,9 @@
-const bcrypt = require('bcrypt');
-const { PrismaClient } = require('@prisma/client');
+import bcrypt from 'bcrypt';
+import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
-const createUser = async (req, res) => {
+export const createUser = async (req, res) => {
     try {
       console.log("createUser called");
       console.log(req.body);
@@ -60,7 +60,7 @@ const createUser = async (req, res) => {
   };
   
     
-  const login = async (req, res) => {
+  export const login = async (req, res) => {
     try {
         const { email, password } = req.body; 
         console.log("Login called");
@@ -106,7 +106,7 @@ const createUser = async (req, res) => {
   
   
 
-module.exports = {
+export default {
     createUser,
     login,
 };

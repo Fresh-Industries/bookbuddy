@@ -1,10 +1,10 @@
-const axios = require('axios');
-const { PrismaClient } = require('@prisma/client');
+import axios from 'axios';
+import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
-require('dotenv').config(); 
+import 'dotenv/config'; 
 
 
-const searchBooks = async (req, res) => {
+export const searchBooks = async (req, res) => {
     try {
         const { query } = req.query; 
         const response = await axios.get(`${process.env.GOOGLE_BOOKS_API_URL}?q=${query}&key=${process.env.GOOGLE_API_KEY}`);
@@ -15,7 +15,7 @@ const searchBooks = async (req, res) => {
     }
 };
 
-const getBook = async (req, res) => {
+export const getBook = async (req, res) => {
     try {
         const { id } = req.params; 
 
@@ -28,7 +28,7 @@ const getBook = async (req, res) => {
     }
 }
 
-const addBookToLibrary = async (req, res) => {
+export const addBookToLibrary = async (req, res) => {
     try {
         console.log("addBookToLibrary called");
         const userId = req.UserId; 
@@ -76,7 +76,7 @@ const addBookToLibrary = async (req, res) => {
     }
 };
 
-const updateBook = async (req, res) => {
+export const updateBook = async (req, res) => {
     try {
         const { id } = req.params; // Assuming you pass the UserBook ID as a URL parameter
         const { status, rating, startedAt, finishedAt, pagesRead } = req.body;
@@ -108,7 +108,7 @@ const updateBook = async (req, res) => {
     }
 };
 
-const getUserBooks = async (req, res) => {
+export const getUserBooks = async (req, res) => {
     try {
         
         const userId = req.UserId; // Set by your auth middleware
@@ -127,7 +127,7 @@ const getUserBooks = async (req, res) => {
 };
 
 
-module.exports = {
+export default {
     searchBooks,
     getBook,
     addBookToLibrary,

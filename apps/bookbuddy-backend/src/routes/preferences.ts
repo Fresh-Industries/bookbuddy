@@ -16,7 +16,9 @@ function verify(req: AuthReq, res: Response, next: Function) {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
     req.UserId = decoded.userId;
     next();
-  } catch { res.status(401).json({ error: 'Invalid token' });
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+  }
 }
 
 router.get('/preferences', verify, async (req: AuthReq, res) => {

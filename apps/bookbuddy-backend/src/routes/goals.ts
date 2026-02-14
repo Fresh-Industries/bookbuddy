@@ -15,12 +15,17 @@ function verify(req: AuthReq, res: Response, next: Function) {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
     req.UserId = decoded.userId;
     next();
-  } catch { res.status(401).json({ error: 'Invalid token' });
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+  }
 }
 
 router.get('/', verify, async (req: AuthReq, res) => {
   const year = new Date().getFullYear();
-  const goals = await prisma.readingGoal.findMany({ where: { userId: req.UserId!, year }, orderBy: { type: 'asc' });
+  const goals = await prisma.readingGoal.findMany({
+    where: { userId: req.UserId!, year },
+    orderBy: { type: 'asc' }
+  });
   res.json(goals);
 });
 
@@ -41,7 +46,9 @@ router.put('/:id/progress', verify, async (req: AuthReq, res) => {
 });
 
 router.delete('/:id', verify, async (req: AuthReq, res) => {
-  await prisma.readingGoal.delete({ where: { id: parseInt(req.params.id), userId: req.UserId });
+  await prisma.readingGoal.delete({
+    where: { id: parseInt(req.params.id), userId: req.UserId }
+  });
   res.json({ success: true });
 });
 

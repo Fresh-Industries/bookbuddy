@@ -1,8 +1,8 @@
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
-require('dotenv').config(); 
+import 'dotenv/config'; 
 
-const getUserById = async (req, res) => {
+export const getUserById = async (req, res) => {
     try {
         const userId = req.UserId;
         const user = await prisma.user.findUnique({
@@ -21,7 +21,7 @@ const getUserById = async (req, res) => {
     }
 };
 
-const getUserBookById = async (req, res) => {
+export const getUserBookById = async (req, res) => {
     try {
         const { id } = req.params;
         const userBook = await prisma.userBook.findUnique({
@@ -40,7 +40,7 @@ const getUserBookById = async (req, res) => {
     }
 };
 
-const getUserNotes = async (req, res) => {
+export const getUserNotes = async (req, res) => {
     try {
         const userId = req.UserId;
         const userNotes = await prisma.note.findMany({
@@ -56,7 +56,7 @@ const getUserNotes = async (req, res) => {
     }
 };
 
-const getUserNoteByBookId = async (req, res) => {
+export const getUserNoteByBookId = async (req, res) => {
     try {
         const userId = req.UserId;
         const { id } = req.params;
@@ -74,10 +74,9 @@ const getUserNoteByBookId = async (req, res) => {
     }
 };
 
-module.exports = {
+export default {
     getUserById,
     getUserBookById,
     getUserNotes,
     getUserNoteByBookId
 };
-

@@ -1,4 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function userBookById(bookId) {
@@ -9,7 +9,7 @@ async function userBookById(bookId) {
     });
 };
 
-const createReadingSession = async (req, res) => {
+export const createReadingSession = async (req, res) => {
     try {
         const { userBookId, startedAt, pageEnd, timeSpent, notesContent } = req.body;
         const userId = req.UserId;
@@ -50,7 +50,7 @@ const createReadingSession = async (req, res) => {
     }
 };
 
-const getReadingSessions = async (req, res) => {
+export const getReadingSessions = async (req, res) => {
     try {
         const userId = req.UserId;
 
@@ -70,6 +70,6 @@ const getReadingSessions = async (req, res) => {
     }
 };
 
-module.exports = {
+export default {
     createReadingSession,
 };

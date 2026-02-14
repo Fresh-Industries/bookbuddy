@@ -21,10 +21,13 @@ interface AuthReq extends Request {
 }
 
 async function getLastSession(userId: number) {
-  return prisma.readingSession.findFirst({ where: { userId }, orderBy: { startedAt: 'desc' });
+  return prisma.readingSession.findFirst({
+    where: { userId },
+    orderBy: { startedAt: 'desc' }
+  });
 }
 async function getBook(id: number) {
-  return prisma.userBook.findUnique({ where: { id });
+  return prisma.userBook.findUnique({ where: { id } });
 }
 
 function verifyToken(req: AuthReq, res: Response, next: Function) {
@@ -34,7 +37,9 @@ function verifyToken(req: AuthReq, res: Response, next: Function) {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
     req.UserId = decoded.userId;
     next();
-  } catch { res.status(401).json({ error: 'Invalid token' });
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+  }
 }
 
 router.post('/chatbot', async (req: Request, res: Response) => {

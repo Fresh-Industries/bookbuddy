@@ -1,7 +1,7 @@
 // middleware that verifies the token and sets the user ID in the request object:
 
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
+import jwt from 'jsonwebtoken';
+import 'dotenv/config';
 
 const verifyToken = (req, res, next) => {
 
@@ -23,4 +23,4 @@ const verifyToken = (req, res, next) => {
     });
 };
 
-module.exports = verifyToken;
+export default verifyToken;

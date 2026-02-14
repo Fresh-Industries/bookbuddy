@@ -1,10 +1,10 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
-const verifyToken = require('../../middleware/verifyToken');
+import verifyToken from '../../middleware/verifyToken.js';
 
-const readingSessionsController = require('../../controllers/readingSessions/readingSessionsController');
+import readingSessionsController from '../../controllers/readingSessions/readingSessionsController.js';
 
 router.post('/new-reading-session', verifyToken, readingSessionsController.createReadingSession);
 
-module.exports = router;
+export default router;

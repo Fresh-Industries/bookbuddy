@@ -1,10 +1,10 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
-const verifyToken = require('../../middleware/verifyToken');
+import verifyToken from '../../middleware/verifyToken.js';
 
 
-const booksController = require('../../controllers/books/booksController');
+import booksController from '../../controllers/books/booksController.js';
 
 
 router.get('/search-books', booksController.searchBooks);
@@ -13,5 +13,4 @@ router.post('/add-book',verifyToken ,booksController.addBookToLibrary);
 router.get('/getUserBooks', verifyToken, booksController.getUserBooks);
 router.put('/updateBook/:id', verifyToken, booksController.updateBook);
 
-module.exports = router;
-
+export default router;

@@ -1,14 +1,14 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
-const verifyToken = require('../../middleware/verifyToken');
+import verifyToken from '../../middleware/verifyToken.js';
 
 
-const usersController = require('../../controllers/users/userController');
+import usersController from '../../controllers/users/userController.js';
 
 router.get('/user',verifyToken, usersController.getUserById);
 router.get('/user-book/:id', verifyToken, usersController.getUserBookById);
 router.get('/user-notes', verifyToken, usersController.getUserNotes);
 router.get('/user-note/:id', verifyToken, usersController.getUserNoteByBookId);
 
-module.exports = router;
+export default router;

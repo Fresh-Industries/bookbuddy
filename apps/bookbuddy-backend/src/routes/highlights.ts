@@ -15,21 +15,34 @@ function verify(req: AuthReq, res: Response, next: Function) {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
     req.UserId = decoded.userId;
     next();
-  } catch { res.status(401).json({ error: 'Invalid token' });
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+  }
 }
 
 router.get('/book/:bookId', verify, async (req: AuthReq, res) => {
   try {
-    const h = await prisma.highlight.findMany({ where: { userId: req.UserId!, userBookId: parseInt(req.params.bookId) }, orderBy: { pageNumber: 'asc' });
+    const h = await prisma.highlight.findMany({
+      where: { userId: req.UserId!, userBookId: parseInt(req.params.bookId) },
+      orderBy: { pageNumber: 'asc' }
+    });
     res.json(h);
-  } catch (e) { res.status(500).json({ error: 'Failed' });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed' });
+  }
 });
 
 router.get('/', verify, async (req: AuthReq, res) => {
   try {
-    const h = await prisma.highlight.findMany({ where: { userId: req.UserId! }, include: { userBook: true }, orderBy: { createdAt: 'desc' });
+    const h = await prisma.highlight.findMany({
+      where: { userId: req.UserId! },
+      include: { userBook: true },
+      orderBy: { createdAt: 'desc' }
+    });
     res.json(h);
-  } catch (e) { res.status(500).json({ error: 'Failed' });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed' });
+  }
 });
 
 router.post('/', verify, async (req: AuthReq, res) => {
@@ -37,21 +50,32 @@ router.post('/', verify, async (req: AuthReq, res) => {
   try {
     const h = await prisma.highlight.create({ data: { userId: req.UserId!, userBookId: parseInt(userBookId), content, pageNumber: pageNumber || null, chapter: chapter || null, color: color || 'yellow', note: note || null } });
     res.json(h);
-  } catch (e) { res.status(500).json({ error: 'Failed' });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed' });
+  }
 });
 
 router.put('/:id', verify, async (req: AuthReq, res) => {
   try {
-    const h = await prisma.highlight.update({ where: { id: parseInt(req.params.id), userId: req.UserId! }, data: { color: req.body.color, note: req.body.note });
+    const h = await prisma.highlight.update({
+      where: { id: parseInt(req.params.id), userId: req.UserId! },
+      data: { color: req.body.color, note: req.body.note }
+    });
     res.json(h);
-  } catch (e) { res.status(500).json({ error: 'Failed' });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed' });
+  }
 });
 
 router.delete('/:id', verify, async (req: AuthReq, res) => {
   try {
-    await prisma.highlight.delete({ where: { id: parseInt(req.params.id), userId: req.UserId! });
+    await prisma.highlight.delete({
+      where: { id: parseInt(req.params.id), userId: req.UserId! }
+    });
     res.json({ success: true });
-  } catch (e) { res.status(500).json({ error: 'Failed' });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed' });
+  }
 });
 
 export default router;
