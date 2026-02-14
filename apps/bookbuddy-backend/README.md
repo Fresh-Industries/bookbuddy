@@ -1,68 +1,39 @@
-# BookBuddy Backend
+# BookBuddy Setup
 
-## Setup
+## Quick Start
 
-1. **Install dependencies:**
+### 1. Start Database
 ```bash
-npm install
+cd apps/bookbuddy-backend
+docker-compose up -d
 ```
 
-2. **Copy environment variables:**
+### 2. Copy env file
 ```bash
 cp .env.example .env
+# Edit .env with your keys
 ```
 
-3. **Update `.env` with your values:**
-- `DATABASE_URL` - PostgreSQL connection string
-- `MINIMAX_API_KEY` - Your MiniMax API key (get from https://platform.minimaxi.com)
-- `BETTER_AUTH_SECRET` - Generate with: `openssl rand -base64 32`
-
-4. **Set up database:**
+### 3. Generate Prisma Client & Migrate
 ```bash
+npx prisma generate
 npx prisma migrate dev --name init
 ```
 
-5. **Run the server:**
+### 4. Start Server
 ```bash
 npm run dev
 ```
 
-## Tech Stack
+### 5. Frontend (new terminal)
+```bash
+cd apps/bookbuddy-frontend
+# Add BASE_URL=http://localhost:3001 to .env
+npx expo start
+```
 
-- **Express** - Web framework
-- **Prisma** - ORM with PostgreSQL
-- **Better Auth** - Authentication (email/password, sessions)
-- **AI SDK** - AI integration (MiniMax M2.5 default)
-
-## API Routes
-
-| Route | Description |
-|-------|-------------|
-| `/v1/auth/*` | Authentication (sign up, sign in, sessions) |
-| `/v1/books/*` | Book management |
-| `/v1/users/*` | User profiles |
-| `/v1/reading-sessions/*` | Reading tracking |
-| `/v1/ai/*` | AI-powered features |
-
-## AI Features
-
-- **POST /v1/ai/chat** - Chat with AI about books
-- **POST /v1/ai/summary** - Generate book summaries
-- **POST /v1/ai/insights** - Get insights from reading notes
-- **POST /v1/ai/recommendations** - Get book recommendations
-
-### Default Model
-- **MiniMax M2.5** - Fast, affordable, great for text generation
-
-## Environment Variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `MINIMAX_API_KEY` | Yes* | MiniMax API key |
-| `OPENAI_API_KEY` | Yes* | OpenAI API key |
-| `ANTHROPIC_API_KEY` | Yes* | Anthropic API key |
-| `BETTER_AUTH_SECRET` | Yes | Auth encryption secret |
-| `FRONTEND_URL` | No | Frontend URL for CORS |
-
-*At least one AI provider required
+## Env Vars Needed
+- DATABASE_URL (auto with docker-compose)
+- BETTER_AUTH_SECRET (32+ chars)
+- GOOGLE_API_KEY (for book search)
+- MINIMAX_API_KEY (for AI chat)
